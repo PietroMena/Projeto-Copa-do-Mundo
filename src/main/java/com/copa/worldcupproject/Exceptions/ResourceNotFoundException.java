@@ -1,4 +1,4 @@
-package com.copa.worldcupproject.Exeptions;
+package com.copa.worldcupproject.Exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
 
