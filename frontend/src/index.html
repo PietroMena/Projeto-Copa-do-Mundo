@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copa do Mundo — Painel de Notícias</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --verde: #009c3b;
+    --amarelo: #ffdf00;
+    --azul: #003087;
+    --branco: #f5f5f0;
+    --cinza: #1a1a1a;
+    --cinza-medio: #2e2e2e;
+    --cinza-claro: #3d3d3d;
+    --texto: #e8e8e0;
+    --borda: rgba(255,223,0,0.2);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cinza);
+    color: var(--texto);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--azul);
+    border-bottom: 3px solid var(--amarelo);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--amarelo);
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo span { color: var(--branco); }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary   { background: var(--verde);  color: #fff; }
+  .btn-primary:hover { background: #00b344; }
+  .btn-warning   { background: var(--amarelo); color: var(--cinza); }
+  .btn-warning:hover { background: #ffe733; }
+  .btn-danger    { background: #c0392b; color: #fff; }
+  .btn-danger:hover  { background: #e74c3c; }
+  .btn-secondary { background: var(--cinza-claro); color: var(--texto); border: 1px solid var(--borda); }
+  .btn-secondary:hover { background: #4a4a4a; }
+  .btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+
+  /* ── PAGES ── */
+  .page { display: none; min-height: calc(100vh - 64px); }
+  .page.active { display: block; }
+
+  /* ── LOGIN ── */
+  #page-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--cinza) 0%, var(--azul) 100%);
+    min-height: 100vh;
+  }
+  #page-login.active { display: flex; }
+
+  .login-card {
+    background: var(--cinza-medio);
+    border: 1px solid var(--borda);
+    border-top: 4px solid var(--amarelo);
+    border-radius: 8px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .login-card h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--amarelo);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .login-card p { font-size: 0.82rem; color: #888; margin-bottom: 1.8rem; }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 1.1rem; }
+  label { display: block; font-size: 0.78rem; font-weight: 600; color: #aaa; margin-bottom: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
+  input, textarea, select {
+    width: 100%;
+    background: var(--cinza-claro);
+    border: 1px solid #4a4a4a;
+    border-radius: 4px;
+    color: var(--texto);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    padding: 9px 12px;
+    transition: border-color 0.18s;
+    outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--amarelo); }
+  textarea { resize: vertical; min-height: 100px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* ── ALERT ── */
+  .alert {
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 0.84rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .alert.show { display: block; }
+  .alert-error   { background: rgba(192,57,43,0.2); border: 1px solid #c0392b; color: #e57373; }
+  .alert-success { background: rgba(0,156,59,0.15); border: 1px solid var(--verde); color: #69d98a; }
+
+  /* ── MAIN CONTENT ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .toolbar h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--amarelo);
+    letter-spacing: 2px;
+  }
+  .search-wrap {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    max-width: 340px;
+  }
+  .search-wrap input { margin: 0; }
+
+  /* ── NEWS GRID ── */
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .card {
+    background: var(--cinza-medio);
+    border: 1px solid var(--borda);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+
+  .card-img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    background: var(--cinza-claro);
+    display: block;
+  }
+  .card-img-placeholder {
+    width: 100%;
+    height: 170px;
+    background: var(--cinza-claro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #555;
+  }
+
+  .card-body { padding: 1rem; }
+  .card-date { font-size: 0.72rem; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .card-title { font-weight: 600; font-size: 0.95rem; color: var(--branco); margin-bottom: 8px; line-height: 1.35; }
+  .card-excerpt { font-size: 0.82rem; color: #aaa; line-height: 1.5; margin-bottom: 1rem;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .card-actions { display: flex; gap: 6px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    display: none;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--cinza-medio);
+    border: 1px solid var(--borda);
+    border-top: 4px solid var(--verde);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+  }
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--amarelo);
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.5rem; }
+
+  /* ── MODAL VER ── */
+  .modal-view-img {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+  .modal-view-title { font-size: 1.3rem; font-weight: 600; color: var(--branco); margin-bottom: 6px; }
+  .modal-view-date { font-size: 0.78rem; color: #888; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+  .modal-view-content { font-size: 0.9rem; color: #bbb; line-height: 1.7; }
+
+  /* ── EMPTY ── */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: #666;
+  }
+  .empty-state .icon { font-size: 4rem; margin-bottom: 1rem; }
+  .empty-state p { font-size: 1rem; }
+
+  /* ── LOADING ── */
+  .spinner {
+    display: inline-block;
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: var(--amarelo);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-overlay {
+    text-align: center;
+    padding: 3rem;
+  }
+
+  /* ── BADGE ADMIN ── */
+  .badge-admin {
+    font-size: 0.7rem;
+    background: var(--amarelo);
+    color: var(--cinza);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .user-info { display: flex; align-items: center; gap: 10px; }
+  .user-info span { font-size: 0.82rem; color: #aaa; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--cinza-medio);
+    border-left: 4px solid var(--verde);
+    border-radius: 4px;
+    padding: 12px 18px;
+    font-size: 0.87rem;
+    color: var(--texto);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 999;
+    transform: translateX(120%);
+    transition: transform 0.3s;
+  }
+  #toast.show { transform: translateX(0); }
+  #toast.error { border-left-color: #c0392b; }
+
+  /* ── BASE URL CONFIG ── */
+  .config-bar {
+    background: rgba(0,48,135,0.3);
+    border-bottom: 1px solid var(--borda);
+    padding: 8px 2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.78rem;
+    color: #888;
+  }
+  .config-bar input {
+    width: auto;
+    flex: 1;
+    max-width: 300px;
+    padding: 4px 8px;
+    font-size: 0.78rem;
+    border-color: #333;
+  }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    .toolbar { flex-direction: column; align-items: flex-start; }
+    .search-wrap { max-width: 100%; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">⚽ COPA <span>2026</span></div>
+  <div class="header-actions" id="header-actions">
+    <!-- preenchido via JS -->
+  </div>
+</header>
+
+<!-- CONFIG BAR -->
+<div class="config-bar" id="config-bar">
+  <span>API Base URL:</span>
+  <input type="text" id="base-url-input" value="http://localhost:8080" />
+  <button class="btn btn-secondary btn-sm" onclick="saveBaseUrl()">Salvar</button>
+</div>
+
+<!-- ══════════════ PAGE: LOGIN ══════════════ -->
+<div class="page active" id="page-login">
+  <div class="login-card">
+    <h2>⚽ Login</h2>
+    <p>Painel administrativo de notícias</p>
+    <div class="alert alert-error" id="login-error"></div>
+    <div class="form-group">
+      <label>Login</label>
+      <input type="text" id="login-user" placeholder="seu login" />
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••" onkeydown="if(event.key==='Enter') doLogin()" />
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doLogin()" id="btn-login">
+      Entrar
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE: NOTÍCIAS ══════════════ -->
+<div class="page" id="page-noticias">
+  <div class="container">
+    <div class="toolbar">
+      <h1>📰 Notícias</h1>
+      <div class="search-wrap">
+        <input type="text" id="search-input" placeholder="Buscar por título…" onkeydown="if(event.key==='Enter') buscarNoticias()" />
+        <button class="btn btn-secondary btn-sm" onclick="buscarNoticias()">Buscar</button>
+        <button class="btn btn-secondary btn-sm" onclick="limparBusca()">✕</button>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModalNova()" id="btn-nova">+ Nova Notícia</button>
+    </div>
+
+    <div class="alert alert-error" id="noticias-error"></div>
+
+    <div id="news-container">
+      <div class="loading-overlay"><div class="spinner"></div> <p style="margin-top:1rem;color:#666">Carregando notícias…</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: CRIAR / EDITAR ══════════════ -->
+<div class="modal-overlay" id="modal-form">
+  <div class="modal">
+    <h2 id="modal-form-title">Nova Notícia</h2>
+    <div class="alert alert-error" id="form-error"></div>
+
+    <div class="form-group">
+      <label>Título</label>
+      <input type="text" id="f-titulo" placeholder="Título da notícia (3–100 chars)" />
+    </div>
+    <div class="form-group">
+      <label>URL da Imagem</label>
+      <input type="url" id="f-imagem" placeholder="https://..." oninput="previewImg()" />
+    </div>
+    <img id="f-imagem-preview" src="" alt="" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:4px;margin-bottom:1rem;" />
+    <div class="form-group">
+      <label>Conteúdo</label>
+      <textarea id="f-conteudo" placeholder="Texto completo da notícia…" rows="5"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Data de Postagem</label>
+      <input type="date" id="f-data" />
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="fecharModalForm()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarNoticia()" id="btn-salvar">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: VER ══════════════ -->
+<div class="modal-overlay" id="modal-view">
+  <div class="modal">
+    <img id="mv-img" class="modal-view-img" src="" alt="" style="display:none" />
+    <div class="modal-view-date" id="mv-date"></div>
+    <div class="modal-view-title" id="mv-title"></div>
+    <div class="modal-view-content" id="mv-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="fecharModalView()">Fechar</button>
+      <button class="btn btn-warning btn-sm" id="mv-edit-btn" onclick="">Editar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: CONFIRMAR DELETE ══════════════ -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <h2 style="font-size:1.2rem;font-family:'Inter',sans-serif;color:var(--texto);margin-bottom:.5rem">Excluir notícia?</h2>
+    <p style="color:#888;font-size:.87rem;margin-bottom:1.5rem">Essa ação não pode ser desfeita.</p>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-secondary" onclick="fecharModalConfirm()">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarDelete()" id="btn-confirm-delete">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════ STATE ══════════
+let baseUrl = localStorage.getItem('copaBaseUrl') || 'http://localhost:8080';
+let isAdmin = false;
+let editandoId = null;
+let deletandoId = null;
+let toastTimer;
+
+document.getElementById('base-url-input').value = baseUrl;
+
+function saveBaseUrl() {
+  baseUrl = document.getElementById('base-url-input').value.replace(/\/$/, '');
+  localStorage.setItem('copaBaseUrl', baseUrl);
+  toast('URL salva: ' + baseUrl);
+}
+
+// ══════════ TOAST ══════════
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type === 'error' ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3200);
+}
+
+// ══════════ PAGE NAVIGATION ══════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+}
+
+// ══════════ HEADER ══════════
+function renderHeader() {
+  const el = document.getElementById('header-actions');
+  if (!isAdmin) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = `
+    <div class="user-info">
+      <span class="badge-admin">ADMIN</span>
+      <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+    </div>`;
+}
+
+// ══════════ LOGIN ══════════
+async function doLogin() {
+  const login = document.getElementById('login-user').value.trim();
+  const senha = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+
+  if (!login || !senha) { showAlert(errEl, 'Preencha login e senha.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  hideAlert(errEl);
+
+  try {
+    const r = await fetch(`${baseUrl}/adm/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, senha })
+    });
+    if (!r.ok) throw new Error(await r.text() || 'Credenciais inválidas');
+    isAdmin = true;
+    renderHeader();
+    showPage('noticias');
+    carregarNoticias();
+    toast('Bem-vindo, ' + login + '!');
+  } catch (e) {
+    showAlert(errEl, e.message || 'Erro de conexão. Verifique a API.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+function logout() {
+  isAdmin = false;
+  renderHeader();
+  showPage('login');
+}
+
+// ══════════ CARREGAR NOTÍCIAS ══════════
+async function carregarNoticias() {
+  const container = document.getElementById('news-container');
+  container.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  hideAlert(document.getElementById('noticias-error'));
+
+  try {
+    const r = await fetch(`${baseUrl}/noticias`);
+    if (!r.ok) throw new Error('Erro ' + r.status);
+    const data = await r.json();
+    renderNoticias(data);
+  } catch (e) {
+    container.innerHTML = '';
+    showAlert(document.getElementById('noticias-error'), 'Não foi possível carregar as notícias. ' + e.message);
+  }
+}
+
+async function buscarNoticias() {
+  const titulo = document.getElementById('search-input').value.trim();
+  if (!titulo) { carregarNoticias(); return; }
+  const container = document.getElementById('news-container');
+  container.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const r = await fetch(`${baseUrl}/noticias/buscar?titulo=${encodeURIComponent(titulo)}`);
+    if (!r.ok) throw new Error('Erro ' + r.status);
+    const data = await r.json();
+    renderNoticias(data, `Resultados para "${titulo}"`);
+  } catch (e) {
+    container.innerHTML = '';
+    showAlert(document.getElementById('noticias-error'), 'Erro ao buscar: ' + e.message);
+  }
+}
+
+function limparBusca() {
+  document.getElementById('search-input').value = '';
+  carregarNoticias();
+}
+
+function renderNoticias(lista, subtitulo = '') {
+  const container = document.getElementById('news-container');
+  if (!lista.length) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>Nenhuma notícia encontrada.</p></div>`;
+    return;
+  }
+  const sub = subtitulo ? `<p style="color:#888;font-size:.82rem;margin-bottom:1rem">${subtitulo} — ${lista.length} resultado(s)</p>` : '';
+  container.innerHTML = sub + `<div class="news-grid">${lista.map(cardHTML).join('')}</div>`;
+}
+
+function cardHTML(n) {
+  const imgEl = n.imagem
+    ? `<img class="card-img" src="${esc(n.imagem)}" alt="${esc(n.titulo)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="card-img-placeholder" style="display:none">🖼️</div>`
+    : `<div class="card-img-placeholder">🖼️</div>`;
+
+  const editBtn = isAdmin ? `<button class="btn btn-warning btn-sm" onclick="abrirModalEditar(${n.id})">Editar</button>` : '';
+  const delBtn  = isAdmin ? `<button class="btn btn-danger btn-sm" onclick="abrirConfirmDelete(${n.id})">Excluir</button>` : '';
+
+  return `<div class="card">
+    ${imgEl}
+    <div class="card-body">
+      <div class="card-date">${formatDate(n.diaPostagem)}</div>
+      <div class="card-title">${esc(n.titulo)}</div>
+      <div class="card-excerpt">${esc(n.conteudo)}</div>
+      <div class="card-actions">
+        <button class="btn btn-secondary btn-sm" onclick="verNoticia(${n.id})">Ver</button>
+        ${editBtn}
+        ${delBtn}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════ VER NOTÍCIA ══════════
+let cachedNoticias = {};
+
+async function verNoticia(id) {
+  try {
+    const r = await fetch(`${baseUrl}/noticias/${id}`);
+    if (!r.ok) throw new Error();
+    const n = await r.json();
+    cachedNoticias[id] = n;
+
+    const img = document.getElementById('mv-img');
+    if (n.imagem) { img.src = n.imagem; img.style.display = 'block'; } else { img.style.display = 'none'; }
+    document.getElementById('mv-title').textContent = n.titulo;
+    document.getElementById('mv-date').textContent = formatDate(n.diaPostagem);
+    document.getElementById('mv-content').textContent = n.conteudo;
+
+    const editBtn = document.getElementById('mv-edit-btn');
+    if (isAdmin) { editBtn.style.display = ''; editBtn.onclick = () => { fecharModalView(); abrirModalEditar(id); }; }
+    else { editBtn.style.display = 'none'; }
+
+    document.getElementById('modal-view').classList.add('open');
+  } catch { toast('Erro ao carregar notícia.', 'error'); }
+}
+function fecharModalView() { document.getElementById('modal-view').classList.remove('open'); }
+
+// ══════════ CRIAR NOTÍCIA ══════════
+function abrirModalNova() {
+  editandoId = null;
+  document.getElementById('modal-form-title').textContent = 'Nova Notícia';
+  document.getElementById('f-titulo').value = '';
+  document.getElementById('f-imagem').value = '';
+  document.getElementById('f-conteudo').value = '';
+  document.getElementById('f-data').value = today();
+  document.getElementById('f-imagem-preview').style.display = 'none';
+  hideAlert(document.getElementById('form-error'));
+  document.getElementById('modal-form').classList.add('open');
+}
+
+async function abrirModalEditar(id) {
+  try {
+    const r = await fetch(`${baseUrl}/noticias/${id}`);
+    if (!r.ok) throw new Error();
+    const n = await r.json();
+    editandoId = id;
+    document.getElementById('modal-form-title').textContent = 'Editar Notícia';
+    document.getElementById('f-titulo').value = n.titulo;
+    document.getElementById('f-imagem').value = n.imagem || '';
+    document.getElementById('f-conteudo').value = n.conteudo;
+    document.getElementById('f-data').value = n.diaPostagem;
+    previewImg();
+    hideAlert(document.getElementById('form-error'));
+    document.getElementById('modal-form').classList.add('open');
+  } catch { toast('Erro ao carregar dados.', 'error'); }
+}
+
+function fecharModalForm() { document.getElementById('modal-form').classList.remove('open'); }
+
+function previewImg() {
+  const url = document.getElementById('f-imagem').value;
+  const el = document.getElementById('f-imagem-preview');
+  if (url) { el.src = url; el.style.display = 'block'; el.onerror = () => el.style.display = 'none'; }
+  else { el.style.display = 'none'; }
+}
+
+async function salvarNoticia() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  const imagem = document.getElementById('f-imagem').value.trim();
+  const conteudo = document.getElementById('f-conteudo').value.trim();
+  const diaPostagem = document.getElementById('f-data').value;
+  const errEl = document.getElementById('form-error');
+  const btn = document.getElementById('btn-salvar');
+
+  if (!titulo || !imagem || !conteudo || !diaPostagem) {
+    showAlert(errEl, 'Todos os campos são obrigatórios.'); return;
+  }
+  if (titulo.length < 3) { showAlert(errEl, 'Título deve ter pelo menos 3 caracteres.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  hideAlert(errEl);
+
+  const body = { titulo, imagem, conteudo, diaPostagem };
+
+  try {
+    let r;
+    if (editandoId) {
+      r = await fetch(`${baseUrl}/noticias/${editandoId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error('Erro ' + r.status);
+      toast('Notícia atualizada!');
+    } else {
+      r = await fetch(`${baseUrl}/noticias`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error('Erro ' + r.status);
+      toast('Notícia criada!');
+    }
+    fecharModalForm();
+    carregarNoticias();
+  } catch (e) {
+    showAlert(errEl, 'Falha ao salvar: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar';
+  }
+}
+
+// ══════════ DELETE ══════════
+function abrirConfirmDelete(id) {
+  deletandoId = id;
+  document.getElementById('modal-confirm').classList.add('open');
+}
+function fecharModalConfirm() {
+  deletandoId = null;
+  document.getElementById('modal-confirm').classList.remove('open');
+}
+
+async function confirmarDelete() {
+  if (!deletandoId) return;
+  const btn = document.getElementById('btn-confirm-delete');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const r = await fetch(`${baseUrl}/noticias/${deletandoId}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error('Erro ' + r.status);
+    toast('Notícia excluída.');
+    fecharModalConfirm();
+    carregarNoticias();
+  } catch (e) {
+    toast('Erro ao excluir: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Excluir';
+  }
+}
+
+// ══════════ CLOSE MODAL ON OVERLAY CLICK ══════════
+['modal-form','modal-view','modal-confirm'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+// ══════════ UTILS ══════════
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatDate(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+function showAlert(el, msg) { el.textContent = msg; el.classList.add('show'); }
+function hideAlert(el) { el.textContent = ''; el.classList.remove('show'); }
+
+// ══════════ INIT ══════════
+renderHeader();
+document.getElementById('f-data').value = today();
+
+// Visitors can see notícias without logging in
+// Uncomment below to auto-load notícias page for guests:
+// showPage('noticias'); carregarNoticias();
+</script>
+</body>
+</html>

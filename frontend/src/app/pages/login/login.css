@@ -1,0 +1,127 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #003087 100%);
+  padding: 1rem;
+}
+
+.login-card {
+  background: #2e2e2e;
+  border: 1px solid rgba(255, 223, 0, 0.2);
+  border-top: 4px solid #ffdf00;
+  border-radius: 8px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.login-logo h1 {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  font-size: 1.8rem;
+  color: #ffdf00;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.login-logo p {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 4px 0 0;
+}
+
+.form-group {
+  margin-bottom: 1.1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #aaa;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input {
+  width: 100%;
+  background: #3d3d3d;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  color: #e8e8e0;
+  font-size: 0.9rem;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 0.18s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  border-color: #ffdf00;
+}
+
+.btn-entrar {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 11px;
+  background: #009c3b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-entrar:hover:not(:disabled) {
+  background: #00b344;
+}
+
+.btn-entrar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.erro-msg {
+  background: rgba(192, 57, 43, 0.2);
+  border: 1px solid #c0392b;
+  color: #e57373;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 0.83rem;
+  margin-bottom: 1rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

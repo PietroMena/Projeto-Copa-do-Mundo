@@ -1,0 +1,110 @@
+<div class="noticias-page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-logo">⚽ <span class="logo-text">Copa</span> <span class="logo-sub">2026</span></div>
+    <div class="header-actions">
+      <div *ngIf="isAdmin" class="admin-info">
+        <span class="badge-admin">ADMIN</span>
+        <span class="admin-login">{{ loginAtual }}</span>
+        <button class="btn btn-outline btn-sm" (click)="logout()">Sair</button>
+      </div>
+      <a *ngIf="!isAdmin" routerLink="/login" class="btn btn-outline btn-sm">Login Admin</a>
+    </div>
+  </header>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <h1 class="page-title">📰 Notícias</h1>
+    <div class="toolbar-right">
+      <div class="busca-wrap">
+        <input
+          type="text"
+          [(ngModel)]="termoBusca"
+          placeholder="Buscar por título…"
+          (keydown.enter)="buscar()"
+          class="busca-input"
+        />
+        <button class="btn btn-outline btn-sm" (click)="buscar()">Buscar</button>
+        <button class="btn btn-outline btn-sm" (click)="limparBusca()" *ngIf="termoBusca">✕</button>
+      </div>
+      <button *ngIf="isAdmin" class="btn btn-primary" (click)="novaNoticia()">+ Nova Notícia</button>
+    </div>
+  </div>
+
+  <!-- ERRO -->
+  <div class="container">
+    <div class="erro-msg" *ngIf="erro">{{ erro }}</div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="carregando">
+      <div class="spinner"></div>
+      <p>Carregando notícias…</p>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" *ngIf="!carregando && !erro && noticias.length === 0">
+      <div class="empty-icon">📭</div>
+      <p>Nenhuma notícia encontrada.</p>
+      <button *ngIf="isAdmin" class="btn btn-primary" (click)="novaNoticia()">Criar primeira notícia</button>
+    </div>
+
+    <!-- GRID -->
+    <div class="noticias-grid" *ngIf="!carregando && noticias.length > 0">
+      <div class="card" *ngFor="let noticia of noticias">
+        <div class="card-img-wrap">
+          <img
+            *ngIf="noticia.imagem"
+            [src]="noticia.imagem"
+            [alt]="noticia.titulo"
+            class="card-img"
+            (error)="$any($event.target).style.display='none'"
+          />
+          <div class="card-img-placeholder" *ngIf="!noticia.imagem">🖼️</div>
+        </div>
+        <div class="card-body">
+          <div class="card-data">{{ formatarData(noticia.diaPostagem) }}</div>
+          <div class="card-titulo">{{ noticia.titulo }}</div>
+          <div class="card-trecho">{{ noticia.conteudo }}</div>
+          <div class="card-actions">
+            <button class="btn btn-outline btn-sm" (click)="verNoticia(noticia)">Ver</button>
+            <button *ngIf="isAdmin" class="btn btn-warning btn-sm" (click)="editarNoticia(noticia.id)">Editar</button>
+            <button *ngIf="isAdmin" class="btn btn-danger btn-sm" (click)="pedirConfirmacaoDelete(noticia.id)">Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VER NOTÍCIA -->
+  <div class="modal-overlay" *ngIf="noticiaModal" (click)="fecharModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <img
+        *ngIf="noticiaModal.imagem"
+        [src]="noticiaModal.imagem"
+        [alt]="noticiaModal.titulo"
+        class="modal-img"
+      />
+      <div class="modal-data">{{ formatarData(noticiaModal.diaPostagem) }}</div>
+      <div class="modal-titulo">{{ noticiaModal.titulo }}</div>
+      <div class="modal-conteudo">{{ noticiaModal.conteudo }}</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="fecharModal()">Fechar</button>
+        <button *ngIf="isAdmin" class="btn btn-warning btn-sm" (click)="editarNoticia(noticiaModal.id); fecharModal()">Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMAR DELETE -->
+  <div class="modal-overlay" *ngIf="confirmandoDeleteId !== null" (click)="cancelarDelete()">
+    <div class="modal modal-confirm" (click)="$event.stopPropagation()">
+      <h3>Excluir notícia?</h3>
+      <p>Essa ação não pode ser desfeita.</p>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cancelarDelete()">Cancelar</button>
+        <button class="btn btn-danger" (click)="confirmarDelete()">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+</div>

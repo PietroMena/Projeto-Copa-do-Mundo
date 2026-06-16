@@ -1,0 +1,72 @@
+<div class="form-page">
+
+  <div class="form-header">
+    <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    <h1>Editar Notícia</h1>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="carregandoDados">
+    <div class="spinner"></div>
+    <p>Carregando dados…</p>
+  </div>
+
+  <div class="form-card" *ngIf="!carregandoDados">
+    <div class="erro-msg" *ngIf="erro">{{ erro }}</div>
+    <div class="sucesso-msg" *ngIf="sucesso">{{ sucesso }}</div>
+
+    <div class="form-group">
+      <label for="titulo">Título <span class="obrigatorio">*</span></label>
+      <input
+        id="titulo"
+        type="text"
+        [(ngModel)]="noticia.titulo"
+        placeholder="Título da notícia (3–100 caracteres)"
+        maxlength="100"
+      />
+      <span class="counter">{{ noticia.titulo.length }}/100</span>
+    </div>
+
+    <div class="form-group">
+      <label for="imagem">URL da Imagem <span class="obrigatorio">*</span></label>
+      <input
+        id="imagem"
+        type="url"
+        [(ngModel)]="noticia.imagem"
+        placeholder="https://exemplo.com/imagem.jpg"
+      />
+      <img
+        *ngIf="noticia.imagem"
+        [src]="noticia.imagem"
+        class="img-preview"
+        alt="Preview"
+        (error)="$any($event.target).style.display='none'"
+        (load)="$any($event.target).style.display='block'"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="conteudo">Conteúdo <span class="obrigatorio">*</span></label>
+      <textarea
+        id="conteudo"
+        [(ngModel)]="noticia.conteudo"
+        placeholder="Texto completo da notícia…"
+        rows="8"
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="data">Data de Postagem <span class="obrigatorio">*</span></label>
+      <input id="data" type="date" [(ngModel)]="noticia.diaPostagem" />
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-outline" (click)="voltar()">Cancelar</button>
+      <button class="btn btn-primary" (click)="salvar()" [disabled]="carregando">
+        <span *ngIf="carregando" class="spinner"></span>
+        <span *ngIf="!carregando">Salvar Alterações</span>
+      </button>
+    </div>
+  </div>
+
+</div>
